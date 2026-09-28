@@ -136,8 +136,10 @@ Music-Real-Time-Streaming/
 ├── include/
 │   └── protocol.h        # 🔒 공용 패킷 프로토콜 정의 (수정 금지)
 ├── server/
+│   └── lib/
 │   └── server.c          # 🖥️ 서버: 오디오 송신 + 다중 클라이언트 처리
 ├── client/
+│   └── lib/
 │   └── client.c          # 💻 클라이언트: 수신 + PortAudio 재생
 └── bin/                  # 빌드 산출물 (gitignore)
     ├── server
