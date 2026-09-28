@@ -6,8 +6,8 @@ PORTAUDIO_LIBS = -lportaudio
 SERVER_BIN = bin/server
 CLIENT_BIN = bin/client
 
-SERVER_SRCS = $(wildcard server/*.c)
-CLIENT_SRCS = $(wildcard client/*.c)
+SERVER_SRCS = $(wildcard server/*.c) $(wildcard server/lib/*.c)
+CLIENT_SRCS = $(wildcard client/*.c) $(wildcard client/lib/*.c)
 
 all: $(SERVER_BIN) $(CLIENT_BIN)
 
