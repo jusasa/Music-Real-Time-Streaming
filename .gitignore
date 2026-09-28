@@ -53,3 +53,19 @@ dkms.conf
 
 # debug information files
 *.dwo
+
+# 빌드 결과물 및 임시 파일
+bin/
+*.o
+*.out
+
+# 오디오 테스트 파일 (절대 깃에 올리지 말 것)
+*.raw
+*.pcm
+*.wav
+*.mp3
+
+# VS Code / IDE 설정
+.vscode/
+.idea/
+*.swp
