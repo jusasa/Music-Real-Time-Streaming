@@ -4,9 +4,7 @@
 
 #include "audio_player.h"
 
-#include <stdint.h>
 #include <stdio.h>
-#include <string.h>
 
 static int pa_callback(const void *input, void *output,
                        unsigned long frame_count,
@@ -18,31 +16,21 @@ static int pa_callback(const void *input, void *output,
     (void)status_flags;
 
     AudioPlayer *ap = (AudioPlayer *)user_data;
-    uint8_t *out = (uint8_t *)output;
-    size_t bytes_per_frame = (size_t)ap->meta.channels * (ap->meta.bits_per_sample / 8);
-    size_t want = (size_t)frame_count * bytes_per_frame;
-
-    if (ap->paused)
-    {
-        memset(out, 0, want); /* 일시정지 중에는 무음 출력 */
-        return paContinue;
-    }
-
-    size_t got = ring_read(ap->ring, out, want);
-    if (got < want)
-    {
-        /* 언더런: 남은 부분은 무음으로 채워 지직거림 방지 */
-        memset(out + got, 0, want - got);
-    }
+    audio_buffer_render(ap->buffer, output, frame_count, ap->meta.channels);
     return paContinue;
 }
 
-int audio_player_start(AudioPlayer *ap, RingBuffer *ring, const AudioMetaPayload *meta)
+int audio_player_start(AudioPlayer *ap, AudioBuffer *buffer,
+                       const AudioMetaPayload *meta)
 {
-    ap->ring = ring;
+    if (meta->bits_per_sample != 16 || meta->channels == 0) {
+        fprintf(stderr, "[client] 지원하지 않는 오디오 포맷입니다.\n");
+        return -1;
+    }
+
+    ap->buffer = buffer;
     ap->meta = *meta;
     ap->stream = NULL;
-    ap->paused = 0;
 
     PaError err = Pa_Initialize();
     if (err != paNoError)
@@ -92,5 +80,5 @@ void audio_player_stop(AudioPlayer *ap)
 
 void audio_player_set_paused(AudioPlayer *ap, int paused)
 {
-    ap->paused = paused;
+    audio_buffer_set_paused(ap->buffer, paused);
 }

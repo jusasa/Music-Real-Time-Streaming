@@ -142,7 +142,12 @@ Music-Real-Time-Streaming/
 │       └── wav_file.c/.h      # WAV 파일 파싱
 ├── client/
 │   ├── client.c          # 💻 클라이언트 진입점
-│   └── lib/              # 수신 + PortAudio 재생 모듈
+│   └── lib/
+│       ├── audio_buffer.c/.h # 수신 캐시, 탐색, 배속
+│       ├── audio_player.c/.h # PortAudio 재생
+│       ├── control.h
+│       ├── net_util.c/.h
+│       └── packet_handler.c/.h
 └── bin/                  # 빌드 산출물 (gitignore)
     ├── server
     └── client
@@ -176,6 +181,7 @@ make
 # 개별 빌드
 make server
 make client
+make test
 
 # 정리
 make clean
@@ -196,6 +202,13 @@ make clean
 > 클라이언트의 기본 주소 `127.0.0.1`은 클라이언트 자기 자신이므로,
 > 다른 컴퓨터의 서버에 연결할 때는 서버의 사설 IPv4 주소를 전달해야 합니다.
 > 방화벽에서 서버 포트(기본 TCP 8080)의 인바운드 연결도 허용하세요.
+
+클라이언트 터미널 조작:
+
+- `←` / `→`: 이미 수신된 구간에서 5초씩 이동
+- `+` / `-`: 0.25x 단위로 0.5x~4.0x 배속 조절 (음높이도 함께 변경)
+- `Space`: 일시정지/재개, `q`: 종료
+- 진행 바에서 `=`는 재생한 구간, `-`는 수신된 구간입니다. 스트림 특성상 아직 수신되지 않은 구간으로는 이동할 수 없습니다.
 
 ---
 

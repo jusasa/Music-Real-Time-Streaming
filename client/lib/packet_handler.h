@@ -9,13 +9,12 @@
 
 #include "audio_player.h"
 #include "protocol.h"
-#include "ring_buffer.h"
 
 /* 수신 루프가 공유 상태에 접근하기 위한 컨텍스트 */
 typedef struct
 {
     int fd;                   /* 서버 소켓 */
-    RingBuffer *ring;         /* 오디오 데이터 적재 대상 */
+    AudioBuffer *buffer;      /* 수신한 PCM 데이터 저장소 */
     AudioPlayer *player;      /* 재생 제어 대상 */
     pthread_mutex_t *player_lock;
     int paused;

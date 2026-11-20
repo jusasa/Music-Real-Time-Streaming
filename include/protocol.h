@@ -25,6 +25,7 @@ typedef struct
     uint32_t sample_rate;     // 예: 44100
     uint16_t channels;        // 예: 2 (스테레오)
     uint16_t bits_per_sample; // 예: 16 (S16LE)
+    uint64_t total_frames;    // 전체 PCM 프레임 수
 } AudioMetaPayload;
 #pragma pack(pop)
 

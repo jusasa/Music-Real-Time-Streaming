@@ -52,12 +52,13 @@ void *packet_recv_loop(void *arg)
 {
     PacketContext *ctx = (PacketContext *)arg;
 
-    for (;;)
+    while (*ctx->running)
     {
         PacketHeader hdr;
         if (recv_all(ctx->fd, &hdr, sizeof(hdr)) != 0)
         {
             printf("[client] 서버 연결이 종료되었습니다.\n");
+            *ctx->running = 0;
             break;
         }
 
@@ -66,6 +67,7 @@ void *packet_recv_loop(void *arg)
         {
             fprintf(stderr, "[client] 잘못된 패킷 (magic=0x%08X). 연결 종료.\n",
                     hdr.magic);
+            *ctx->running = 0;
             break;
         }
 
@@ -73,6 +75,7 @@ void *packet_recv_loop(void *arg)
         if (hdr.payload_len > MAX_PAYLOAD)
         {
             fprintf(stderr, "[client] 비정상 페이로드 크기: %u\n", hdr.payload_len);
+            *ctx->running = 0;
             break;
         }
 
@@ -83,11 +86,13 @@ void *packet_recv_loop(void *arg)
             if (!payload)
             {
                 perror("malloc(payload)");
+                *ctx->running = 0;
                 break;
             }
             if (recv_all(ctx->fd, payload, hdr.payload_len) != 0)
             {
                 free(payload);
+                *ctx->running = 0;
                 break;
             }
         }
@@ -98,16 +103,45 @@ void *packet_recv_loop(void *arg)
             if (hdr.payload_len >= sizeof(AudioMetaPayload))
             {
                 memcpy(ctx->meta, payload, sizeof(AudioMetaPayload));
+                if (ctx->meta->bits_per_sample != 16 ||
+                    ctx->meta->channels == 0 ||
+                    ctx->meta->sample_rate == 0)
+                {
+                    fprintf(stderr, "[client] 지원하지 않는 오디오 포맷입니다.\n");
+                    *ctx->running = 0;
+                    break;
+                }
+                size_t frame_bytes =
+                    ctx->meta->channels * (ctx->meta->bits_per_sample / 8);
+                if (audio_buffer_set_format(ctx->buffer, frame_bytes,
+                                            ctx->meta->total_frames) != 0)
+                {
+                    perror("audio_buffer_set_format");
+                    *ctx->running = 0;
+                    break;
+                }
                 *ctx->meta_ready = 1;
                 printf("[client] 오디오 포맷: %u Hz, %u ch, %u bit\n",
                        ctx->meta->sample_rate, ctx->meta->channels,
                        ctx->meta->bits_per_sample);
             }
+            else
+            {
+                fprintf(stderr, "[client] 오디오 메타데이터가 잘못되었습니다.\n");
+                *ctx->running = 0;
+            }
             break;
 
         case PKT_AUDIO_DATA:
             if (hdr.payload_len > 0)
-                ring_write(ctx->ring, payload, hdr.payload_len);
+            {
+                if (audio_buffer_append(ctx->buffer, payload,
+                                        hdr.payload_len) != 0)
+                {
+                    perror("audio_buffer_append");
+                    *ctx->running = 0;
+                }
+            }
             break;
 
         case PKT_CONTROL:
@@ -122,6 +156,6 @@ void *packet_recv_loop(void *arg)
         free(payload);
     }
 
-    ring_set_eof(ctx->ring);
+    audio_buffer_finish(ctx->buffer);
     return NULL;
 }

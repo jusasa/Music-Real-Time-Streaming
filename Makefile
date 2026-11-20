@@ -5,6 +5,7 @@ PORTAUDIO_LIBS = -lportaudio
 
 SERVER_BIN = bin/server
 CLIENT_BIN = bin/client
+TEST_BIN = bin/audio_buffer_test
 
 SERVER_SRCS = $(wildcard server/*.c) $(wildcard server/lib/*.c)
 CLIENT_SRCS = $(wildcard client/*.c) $(wildcard client/lib/*.c)
@@ -26,7 +27,13 @@ $(CLIENT_BIN): $(CLIENT_SRCS) | bin
 server: $(SERVER_BIN)
 client: $(CLIENT_BIN)
 
+test: $(TEST_BIN)
+	./$(TEST_BIN)
+
+$(TEST_BIN): tests/audio_buffer_test.c client/lib/audio_buffer.c client/lib/audio_buffer.h | bin
+	$(CC) $(CFLAGS) -Iclient/lib -o $@ tests/audio_buffer_test.c client/lib/audio_buffer.c $(LDFLAGS)
+
 clean:
 	rm -rf bin
 
-.PHONY: all server client clean
+.PHONY: all server client test clean

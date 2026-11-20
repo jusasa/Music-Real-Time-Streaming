@@ -59,5 +59,13 @@ int wav_file_open(WavFile *wav, const char *path) {
     fprintf(stderr, "[server] fmt/data 청크를 찾지 못했습니다\n");
     return -1;
   }
+
+  uint32_t frame_bytes =
+      wav->meta.channels * (wav->meta.bits_per_sample / 8);
+  if (frame_bytes == 0) {
+    fprintf(stderr, "[server] 잘못된 WAV 오디오 포맷입니다\n");
+    return -1;
+  }
+  wav->meta.total_frames = wav->data_size / frame_bytes;
   return 0;
 }
