@@ -13,16 +13,16 @@
 /* PortAudio 콜백에서 사용할 프레임 단위 버퍼 */
 #define PA_FRAMES_PER_BUFFER 1024
 
-typedef struct
-{
-    RingBuffer *ring;      /* 재생할 PCM 데이터 소스 */
-    AudioMetaPayload meta; /* 오디오 포맷 */
-    PaStream *stream;      /* PortAudio 스트림 */
-    volatile int paused;   /* 일시정지 여부 */
+typedef struct {
+  RingBuffer *ring;      /* 재생할 PCM 데이터 소스 */
+  AudioMetaPayload meta; /* 오디오 포맷 */
+  PaStream *stream;      /* PortAudio 스트림 */
+  volatile int paused;   /* 일시정지 여부 */
 } AudioPlayer;
 
 /* 스트림을 열고 재생을 시작한다. 성공 시 0, 실패 시 -1 */
-int audio_player_start(AudioPlayer *ap, RingBuffer *ring, const AudioMetaPayload *meta);
+int audio_player_start(AudioPlayer *ap, RingBuffer *ring,
+                       const AudioMetaPayload *meta);
 
 /* 스트림을 정지/해제하고 PortAudio를 종료한다 */
 void audio_player_stop(AudioPlayer *ap);

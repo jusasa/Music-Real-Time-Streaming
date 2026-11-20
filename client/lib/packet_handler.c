@@ -14,6 +14,15 @@
 /* 비정상 대용량 페이로드 방지 상한 (4 MiB) */
 #define MAX_PAYLOAD (4 * 1024 * 1024)
 
+static void set_player_paused(PacketContext *ctx, int paused)
+{
+    pthread_mutex_lock(ctx->player_lock);
+    ctx->paused = paused;
+    if (ctx->player)
+        audio_player_set_paused(ctx->player, paused);
+    pthread_mutex_unlock(ctx->player_lock);
+}
+
 static void handle_control(PacketContext *ctx, const uint8_t *payload, uint32_t len)
 {
     if (len < 1)
@@ -22,11 +31,11 @@ static void handle_control(PacketContext *ctx, const uint8_t *payload, uint32_t 
     switch (payload[0])
     {
     case CTRL_PLAY:
-        audio_player_set_paused(ctx->player, 0);
+        set_player_paused(ctx, 0);
         printf("[client] ▶ PLAY\n");
         break;
     case CTRL_PAUSE:
-        audio_player_set_paused(ctx->player, 1);
+        set_player_paused(ctx, 1);
         printf("[client] ⏸ PAUSE\n");
         break;
     case CTRL_STOP:

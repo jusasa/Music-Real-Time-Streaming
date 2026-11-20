@@ -5,6 +5,8 @@
 #ifndef CLIENT_LIB_PACKET_HANDLER_H
 #define CLIENT_LIB_PACKET_HANDLER_H
 
+#include <pthread.h>
+
 #include "audio_player.h"
 #include "protocol.h"
 #include "ring_buffer.h"
@@ -15,6 +17,8 @@ typedef struct
     int fd;                   /* 서버 소켓 */
     RingBuffer *ring;         /* 오디오 데이터 적재 대상 */
     AudioPlayer *player;      /* 재생 제어 대상 */
+    pthread_mutex_t *player_lock;
+    int paused;
     AudioMetaPayload *meta;   /* 수신한 오디오 포맷 저장소 */
     volatile int *meta_ready; /* 메타데이터 수신 완료 플래그 */
     volatile int *running;    /* 전체 실행 플래그 */

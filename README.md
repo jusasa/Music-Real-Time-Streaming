@@ -136,11 +136,13 @@ Music-Real-Time-Streaming/
 ├── include/
 │   └── protocol.h        # 🔒 공용 패킷 프로토콜 정의 (수정 금지)
 ├── server/
+│   ├── server.c          # 🖥️ 서버 진입점
 │   └── lib/
-│   └── server.c          # 🖥️ 서버: 오디오 송신 + 다중 클라이언트 처리
+│       ├── server_runtime.c/.h # 송신, 접속, 콘솔 제어
+│       └── wav_file.c/.h      # WAV 파일 파싱
 ├── client/
-│   └── lib/
-│   └── client.c          # 💻 클라이언트: 수신 + PortAudio 재생
+│   ├── client.c          # 💻 클라이언트 진입점
+│   └── lib/              # 수신 + PortAudio 재생 모듈
 └── bin/                  # 빌드 산출물 (gitignore)
     ├── server
     └── client
@@ -182,14 +184,18 @@ make clean
 ### 실행
 
 ```bash
-# 1) 서버 실행 (기본 포트 8080)
-./bin/server
+# 1) 서버 컴퓨터에서 WAV 파일을 지정해 실행 (기본 포트 8080)
+./bin/server /path/to/music.wav
 
-# 2) 클라이언트 실행 (다른 터미널)
-./bin/client
+# 2) 클라이언트 컴퓨터에서 서버의 사설 IPv4 주소로 접속
+./bin/client 192.168.0.10 8080
 ```
 
-> 💡 로컬 테스트 시 서버와 클라이언트를 각각 다른 터미널에서 실행하세요.
+> `192.168.0.10`은 예시입니다. 서버 컴퓨터에서 `ip addr`(Linux) 또는
+> `ipconfig`(Windows)로 Wi-Fi 어댑터의 IPv4 주소를 확인해 사용하세요.
+> 클라이언트의 기본 주소 `127.0.0.1`은 클라이언트 자기 자신이므로,
+> 다른 컴퓨터의 서버에 연결할 때는 서버의 사설 IPv4 주소를 전달해야 합니다.
+> 방화벽에서 서버 포트(기본 TCP 8080)의 인바운드 연결도 허용하세요.
 
 ---
 

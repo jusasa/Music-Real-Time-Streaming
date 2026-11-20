@@ -69,3 +69,7 @@ bin/
 .vscode/
 .idea/
 *.swp
+
+#clangd 설정 파일
+compile_commands.json
+.cache/*
